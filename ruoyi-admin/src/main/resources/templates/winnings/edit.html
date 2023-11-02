@@ -1,0 +1,177 @@
+<!DOCTYPE HTML>
+<html  lang="zh" xmlns:th="http://www.thymeleaf.org">
+<meta charset="utf-8">
+<head th:include="include :: header"></head>
+<link th:href="@{/ajax/libs/summernote/summernote.css}" rel="stylesheet"/>
+<link th:href="@{/ajax/libs/summernote/summernote-bs3.css}" rel="stylesheet"/>
+<body class="white-bg">
+    <div class="wrapper wrapper-content animated fadeInRight ibox-content">
+        <form class="form-horizontal m" id="form-notice-edit" th:object="${winnings}">
+            <input id="noticeId" name="noticeId" th:field="*{id}"  type="hidden">
+            <div class="form-group">
+                <label class="col-sm-3 control-label">用户名：</label>
+                <div class="col-sm-8">
+                    <input disabled id="userName" name="userName" th:field="*{userName}" class="form-control" type="text">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">姓名：</label>
+                <div class="col-sm-8">
+                    <input disabled id="name" name="name" th:field="*{name}" class="form-control" type="text">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">金额：</label>
+                <div class="col-sm-8">
+                    <input disabled id="price" name="price" th:field="*{price}" class="form-control" type="text">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">电话：</label>
+                <div class="col-sm-8">
+                    <input disabled id="phoneNumber" name="phoneNumber" th:field="*{phoneNumber}" class="form-control" type="text">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">图片：</label>
+                <input id="uploadAddress" name="uploadAddress" th:field="*{uploadAddress}" type="hidden">
+                <div id="img"></div>
+            </div>
+            <div class="form-group">
+				<label class="col-sm-3 control-label">类型：</label>
+				<div class="col-sm-8">
+					<select disabled name="type" class="form-control m-b" th:with="type=${@dict.getType('winnings_type')}">
+	                    <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}" th:field="*{type}"></option>
+	                </select>
+				</div>
+			</div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">来源：</label>
+                <div class="col-sm-8">
+                    <input disabled id="source" name="source" th:field="*{source}" class="form-control" type="text">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">备注：</label>
+                <div class="col-sm-8">
+                    <input id="remark" name="remark" th:field="*{remark}" class="form-control" type="text">
+                </div>
+            </div>
+            <div class="form-group">
+				<label class="col-sm-3 control-label">状态：</label>
+				<div class="col-sm-8">
+					<div class="radio-box" th:each="dict : ${@dict.getType('winnings_status')}">
+						<input type="radio" th:id="${dict.dictCode}" name="status" th:value="${dict.dictValue}" th:field="*{status}">
+						<label th:for="${dict.dictCode}" th:text="${dict.dictLabel}"></label>
+					</div>
+				</div>
+			</div>
+
+            <form id ="tempFile" method="post" enctype="multipart/form-data"> <!-- 指令模板文件上传 -->
+                <div style="text-align: center;"> <div class="clearfix" style="width:400px;margin:0 auto;">
+                    <input id ="templatesFile" type="file" multiple="multiple" /> </div>
+                </div> </form>
+
+            <button class="btn btn-default" onclick="sendTemplates();" title="upload"> 上传模板文件 </button>
+
+
+
+<!--            <form enctype="multipart/form-data">-->
+<!--                <p>上传csv文件<input type="file" id="csv_file"  multiple="multiple" name="csv_file"/></p>-->
+<!--                <button id="import">上传</button>-->
+<!--            </form>-->
+
+		</form>
+    </div>
+    <div th:include="include::footer"></div>
+    <script th:src="@{/ajax/libs/summernote/summernote.min.js}"></script>
+    <script th:src="@{/ajax/libs/summernote/summernote-zh-CN.js}"></script>
+    <style>
+        #img img{
+            margin: 0 10px 10px 0;
+            float: right;
+            width: 30%;
+        }
+    </style>
+    <script type="text/javascript">
+        $(function() {
+            var imgValue = document.getElementById("uploadAddress").value;
+            var urls = "";
+            var url = imgValue.split("#");
+            url.forEach(function(item, index, array){
+                urls += '<img src="'+item+'">';
+            });
+            document.getElementById("img").innerHTML = urls;
+        });
+
+        function sendTemplates() { // 需要上传的文件 //
+             var templates = document.getElementById("templatesFile").files;
+             var templates = $("#templatesFile")[0].files; if (templates.length > 2) { alert("上传失败，一次最多两个文件！"); return; }
+             var formdata = new FormData();
+             for (var i = 0 ; i < templates.length ; i++) {
+                 formdata.append("file" , templates[i]);
+             }
+            // formdata.append("name" , "王五" + new Date().getTime());
+            // formdata.append("phoneNumber" , "15109873334");
+            // formdata.append("userName" , "测试用户");
+            // formdata.append("bankCard" , "21314253433333");
+            // formdata.append("type" , "4");
+             $.ajax({
+                 url : ctx + "winnings/add2",
+                 type : "POST",
+                 data : formdata,
+                 processData : false,
+                 contentType : false,
+                 success : function(resultMap) {
+                     if (resultMap.code == "OK") {
+                         alert("上传成功！");
+                     } else if (resultMap.code == "FAIL") {
+                         alert(resultMap.msg);
+                     }
+                 },
+                 error : function(e) {
+                     alert("服务器异常");
+                 }
+             });
+        }
+
+
+
+        var prefix = ctx + "winnings";
+
+		$("#form-notice-edit").validate({
+			rules:{
+				noticeTitle:{
+					required:true,
+				}
+			}
+		});
+
+        $("#import").click(function () {
+            var files = $('#csv_file').prop('files');
+            console.log("111111111111111111111111100000" + files[0])
+            var formdata = new FormData();
+            formdata.append('csv_file', files);
+
+            $.ajax({
+                url: ctx + "common/upload",
+                data: formdata,
+                type: "post",
+                processData: false,
+                contentType: false,
+                success: function(result) {
+                    $.operate.saveSuccess(result);
+                }
+            })
+        });
+
+		function submitHandler() {
+	        if ($.validate.form()) {
+	        	var sHTML = $('.summernote').summernote('code');
+				$("#noticeContent").val(sHTML);
+				$.operate.save(prefix + "/edit", $('#form-notice-edit').serialize());
+	        }
+	    }
+	</script>
+</body>
+</html>

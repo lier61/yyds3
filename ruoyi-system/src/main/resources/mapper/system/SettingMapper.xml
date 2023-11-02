@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SettingMapper">
+
+    <resultMap type="Setting" id="SettingResult">
+        <result property="rouletteId"       column="roulette_id"       />
+        <result property="activityName"    column="activity_name"    />
+        <result property="actsTime"    column="act_s_time"    />
+        <result property="acteTime"  column="act_e_time"  />
+        <result property="actStatus"         column="act_status"          />
+        <result property="maxNum"       column="max_num"       />
+        <result property="createBy"   column="create_by"   />
+        <result property="createTime" column="create_time" />
+        <result property="updateBy"   column="update_by"   />
+        <result property="updateTime" column="update_time" />
+    </resultMap>
+
+    <sql id="selectSettingVo">
+        select roulette_id, activity_name, act_s_time, act_e_time, act_status, max_num, create_by, create_time, update_by, update_time, remark
+        from t_setting
+    </sql>
+
+    <select id="selectSettingById" parameterType="Long" resultMap="SettingResult">
+        <include refid="selectSettingVo"/>
+        where roulette_id = #{rouletteId}
+    </select>
+
+<!--    <select id="selectSettingIp" parameterType="Winnings" resultMap="SettingResult">-->
+<!--        <include refid="selectNoticeVo"/>-->
+<!--        <where>-->
+<!--            <if test="host != null and host != ''">-->
+<!--                AND host = #{host} and create_time > NOW() - INTERVAL 5 MINUTE;-->
+<!--            </if>-->
+<!--        </where>-->
+<!--    </select>-->
+
+    <select id="selectSettingList" parameterType="Setting" resultMap="SettingResult">
+        <include refid="selectSettingVo"/>
+        <where>
+			<if test="updateBy != null and updateBy != ''">
+				AND update_by like concat('%', #{updateBy}, '%')
+			</if>
+		</where>
+    </select>
+
+    <insert id="insertSetting" useGeneratedKeys="true" parameterType="Setting">
+        insert into t_setting (
+			<if test="activityName != null and activityName != '' ">activity_name, </if>
+            <if test="actsTime != null and actsTime != '' ">act_s_time, </if>
+            <if test="acteTime != null and acteTime != '' ">act_e_time, </if>
+			<if test="actStatus != null and actStatus != '' ">act_status, </if>
+            <if test="maxNum != null and maxNum != '' ">max_num</if>
+ 		)values(
+            <if test="activityName != null and activityName != '' ">#{activityName}, </if>
+            <if test="actsTime != null and actsTime != '' ">#{actsTime},  </if>
+            <if test="acteTime != null and acteTime != '' ">a#{acteTime},  </if>
+            <if test="actStatus != null and actStatus != '' ">a#{actStatus},  </if>
+            <if test="maxNum != null and maxNum != '' ">#{maxNum}</if>
+		)
+    </insert>
+
+    <update id="updateSetting" parameterType="Setting">
+        update t_setting as w
+        <set>
+            <if test="actsTime != null and actsTime != ''">w.act_s_time = #{actsTime}, </if>
+            <if test="acteTime != null and acteTime != ''">w.act_e_time = #{acteTime}, </if>
+            <if test="actStatus != null and actStatus != ''">w.act_status = #{actStatus},</if>
+            w.update_time = sysdate()
+        </set>
+        where w.roulette_id = #{rouletteId}
+    </update>
+
+    <delete id="deleteSettingIds" parameterType="String">
+        delete from winnings where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>
